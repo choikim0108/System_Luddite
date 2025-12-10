@@ -79,3 +79,17 @@ DerivedDataCache/*
 
 # bgm 용량 때문에 임시 제거
 Content/Sounds/BGM/
+
+Windows/
+WindowsNoEditor/
+Win64/
+Android/
+IOS/
+
+# 디버깅용 심볼 파일 (용량 주범)
+*.pdb
+
+# 패키징 데이터 파일
+*.ucas
+*.utoc
+*.pak
