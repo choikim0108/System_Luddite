@@ -1,4 +1,5 @@
 # System:Luddite 🔫⏱️
+![image](<img width="1918" height="1079" alt="Image" src="https://github.com/user-attachments/assets/0420755a-4a24-453b-bbcc-bb6012424ab2" />)
 
 > **"Time moves only when you move."**
 > A Superhot-inspired FPS with Roguelite progression elements, built with Unreal Engine 5.
@@ -13,6 +14,7 @@
 기존의 시간 조작 액션에 **로그라이크(Roguelite)** 성장 요소를 결합하여, 웨이브를 클리어할 때마다 다양한 **증강(Augment)** 카드를 선택해 무기를 강화하고 전략적인 전투를 펼칠 수 있습니다.
 
 **개발 기간:** 2025.11 ~ 2025.12 (게임프로그래밍 기말 프로젝트)
+
 **엔진 버전:** Unreal Engine 5.6.1
 
 ---
