@@ -28,7 +28,7 @@
 - 플레이어의 입력(이동, 사격)이 없을 때 **Global Time Dilation**이 극도로 느려짐.
 - 탄환을 보고 피하는 **Superhot** 스타일의 액션 구현.
 
-![image](https://github.com/user-attachments/assets/946c4d2f-9943-4e50-8822-9f6fce08773e)
+![image](https://github.com/user-attachments/assets/3f6831cc-22ab-4aec-9344-11fdb8b23a5d)
 ### 2. Roguelite Progression (로그라이크 성장)
 - **Random Augment Selection:** 충분한 양의 XP 획득 시 3개의 랜덤 증강 카드 제시.
 - **Infinite Stacking:** 동일한 증강 획득 시 효과 및 수치 무한 중첩 (예: 관통 횟수 증가, 연사 속도 등).
