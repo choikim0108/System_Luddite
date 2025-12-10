@@ -1,5 +1,5 @@
 # System:Luddite 🔫⏱️
-[![Video Label]([http://img.youtube.com/vi/OlF2HxlM_88/0.jpg])](https://youtu.be/OlF2HxlM_88)
+[![Video Label](http://img.youtube.com/vi/OlF2HxlM_88/0.jpg)](https://youtu.be/OlF2HxlM_88)
 
 > **"Time moves only when you move."**
 > A Superhot-inspired FPS with Roguelite progression elements, built with Unreal Engine 5.
