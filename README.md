@@ -1,6 +1,7 @@
 # System:Luddite 🔫⏱️
-[![Video Label](http://img.youtube.com/vi/OlF2HxlM_88/0.jpg)](https://youtu.be/OlF2HxlM_88)
-Click to watch play video.
+
+![image](https://github.com/user-attachments/assets/0420755a-4a24-453b-bbcc-bb6012424ab2)
+[📺 Click here to watch the gameplay]([https://youtu.be/OlF2HxlM_88])
 
 > **"Time moves only when you move."**
 > A Superhot-inspired FPS with Roguelite progression elements, built with Unreal Engine 5.
@@ -22,15 +23,18 @@ Click to watch play video.
 
 ## ✨ Key Features (핵심 기능)
 
+![image](https://github.com/user-attachments/assets/4eee957c-ed0c-4c49-8094-ab10f3c96cc8)
 ### 1. Time Manipulation System (시간 조작)
 - 플레이어의 입력(이동, 사격)이 없을 때 **Global Time Dilation**이 극도로 느려짐.
 - 탄환을 보고 피하는 **Superhot** 스타일의 액션 구현.
 
+![image](https://github.com/user-attachments/assets/946c4d2f-9943-4e50-8822-9f6fce08773e)
 ### 2. Roguelite Progression (로그라이크 성장)
 - **Random Augment Selection:** 충분한 양의 XP 획득 시 3개의 랜덤 증강 카드 제시.
 - **Infinite Stacking:** 동일한 증강 획득 시 효과 및 수치 무한 중첩 (예: 관통 횟수 증가, 연사 속도 등).
 - **Dynamic HUD:** 획득한 증강 아이콘이 HUD에 실시간으로 스택(x2, x3)과 함께 표시됨.
 
+![image](https://github.com/user-attachments/assets/82da1ad5-a6b3-4842-92da-0f6c7a3b00d3)
 ### 3. Combat & Physics (전투 및 물리)
 - **Weapon Variety:** 권총(기본 무기), 샷건(Multi-pellet) 구현.
 - **Advanced Ballistics:**
