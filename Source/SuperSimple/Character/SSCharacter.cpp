@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SuperSimple/Combat/SSProjectile.h"
 #include "Components/AudioComponent.h"
+#include "Camera/CameraShakeBase.h"
 
 ASSCharacter::ASSCharacter()
 {
@@ -66,6 +67,19 @@ void ASSCharacter::Tick(float DeltaTime)
     }
 }
 
+void ASSCharacter::PlayCameraShake(TSubclassOf<UCameraShakeBase> ShakeClass, float Scale)
+{
+    // PC(PlayerController)가 있어야 카메라를 흔들 수 있음
+    if (APlayerController* PC = Cast<APlayerController>(GetController()))
+    {
+        if (ShakeClass)
+        {
+            // 셰이크 시작! (Scale로 강도 조절 가능)
+            PC->ClientStartCameraShake(ShakeClass, Scale);
+        }
+    }
+}
+
 // --- 데미지 처리 ---
 void ASSCharacter::TakeDamage_Implementation(float DamageAmount, AActor* DamageCauser)
 {
@@ -73,6 +87,7 @@ void ASSCharacter::TakeDamage_Implementation(float DamageAmount, AActor* DamageC
 
     CurrentHealth--;
     OnHitVisuals();
+    PlayCameraShake(HitCameraShakeClass, 2.0f);
 
     if (CurrentHealth <= 0)
     {
@@ -166,39 +181,57 @@ void ASSCharacter::Look(const FInputActionValue& Value)
     }
 }
 
+void ASSCharacter::StartFire()
+{
+    bIsFiring = true;
+    Fire(); // 누르자마자 첫 발 발사
+}
+
+void ASSCharacter::StopFire()
+{
+    bIsFiring = false;
+    GetWorldTimerManager().ClearTimer(FireTimerHandle); // 타이머 해제
+}
+
 void ASSCharacter::Fire()
 {
     // 1. 기본 체크 (무기 없음, 장전 중이면 발사 불가)
     if (!CurrentWeapon || !ProjectileClass || bIsReloading) return;
 
-    // 2. 연사 속도 체크 (쿨타임 안 찼으면 무시)
-    double CurrentTime = GetWorld()->GetTimeSeconds();
-    
-    // 원래 딜레이(0.2초) / 1.5배 = 0.133초 (빨라짐)
+    // 2. 연사 속도 체크
+    // 증강(Multiplier)을 적용하여 '실제 쿨타임(EffectiveFireDelay)'을 계산
     float EffectiveFireDelay = CurrentWeapon->FireRate_Player / FireRateMultiplier;
+    
+    // (안전장치) 너무 빨라서 프레임이 떨어지는 것 방지 (최소 0.05초)
+    EffectiveFireDelay = FMath::Max(EffectiveFireDelay, 0.05f);
+
+    double CurrentTime = GetWorld()->GetTimeSeconds();
+
+    // 쿨타임이 아직 안 지났으면 발사 취소
+    // (StartFire로 눌렀을 때 광클 방지용)
     if (CurrentTime - LastFireTime < EffectiveFireDelay) return;
 
-    // 3. 탄약 없음 체크 (0발 이하면 발사 불가)
+    // 3. 탄약 없음 체크
     if (CurrentAmmo <= 0)
     {
-        // 빈 탄창 소리 재생
         if (CurrentWeapon->EmptyMagSound)
         {
             FVector MuzzleLoc = MuzzleLocation->GetComponentLocation();
             UGameplayStatics::PlaySoundAtLocation(this, CurrentWeapon->EmptyMagSound, MuzzleLoc, 1.0f, CurrentWeapon->PlayerPitch);
         }
-        return; // ★ 여기서 함수를 끝내야 마이너스로 안 내려갑니다!
+        
+        // 탄약 없으면 자동 발사도 멈춰야 함!
+        StopFire(); 
+        return; 
     }
 
-    // --- 발사 로직 시작 ---
+    // --- [발사 로직 시작] ---
 
-    // 4. 탄약 차감 (★ 반복문 밖에서 1만 차감)
+    // 4. 탄약 차감
     CurrentAmmo--;
-    
-    // UI 갱신
     OnUpdateAmmoUI(CurrentAmmo, CurrentWeapon->MaxAmmo);
 
-    // 5. 발사 사운드 재생
+    // 5. 발사 사운드
     FVector SpawnLocation = MuzzleLocation->GetComponentLocation();
     FRotator BaseRotation = FirstPersonCameraComponent->GetComponentRotation();
 
@@ -207,21 +240,22 @@ void ASSCharacter::Fire()
         UGameplayStatics::PlaySoundAtLocation(this, CurrentWeapon->FireSound, SpawnLocation, 1.0f, CurrentWeapon->PlayerPitch);
     }
     
-    // 6. 총구 화염 (Muzzle Flash)
-    if (CurrentWeapon->MuzzleFlashEffect) // (변수 추가하셨다면)
+    // 6. 총구 화염
+    if (CurrentWeapon->MuzzleFlashEffect)
     {
         UGameplayStatics::SpawnEmitterAttached(CurrentWeapon->MuzzleFlashEffect, MuzzleLocation, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
     }
 
-    // 7. 반동 적용
-    AddControllerPitchInput(CurrentWeapon->Recoil); // (변수 추가하셨다면)
+    // 7. 반동
+    AddControllerPitchInput(CurrentWeapon->Recoil);
+    PlayCameraShake(FireCameraShakeClass, 3.0f);
 
-    // 8. 실제 총알 생성 (여기가 반복문!)
+    // 8. 총알 생성 (For Loop)
     for (int32 i = 0; i < CurrentWeapon->BulletsPerShot; i++)
     {
         FRotator FinalRotation = BaseRotation;
 
-        // 탄 퍼짐 적용
+        // 탄 퍼짐
         if (CurrentWeapon->SpreadAngle > 0.0f)
         {
             float RandomPitch = FMath::RandRange(-CurrentWeapon->SpreadAngle, CurrentWeapon->SpreadAngle);
@@ -239,14 +273,27 @@ void ASSCharacter::Fire()
 
         if (ASSProjectile* Bullet = Cast<ASSProjectile>(SpawnedActor))
         {
-            // [수정 2] 탄속 증가 적용
+            // 탄속 증강 적용
             float FinalSpeed = CurrentWeapon->ProjectileSpeed * ProjectileSpeedMultiplier;
             Bullet->SetProjectileSpeed(FinalSpeed);
             
-            // 특수 능력 전달 (기존 유지)
+            // 특수 능력 전달
             Bullet->SetupSpecialEffects(BonusRicochetCount, BonusPierceCount);
         }
     }
+
+    // --- [핵심 추가] 다음 발사 예약 ---
+
+    // 1. 방금 쐈으니 '마지막 발사 시간' 갱신
+    LastFireTime = CurrentTime;
+
+    // 2. 자동 화기(Automatic)이고, 마우스 버튼을 누르고 있는 상태(bIsFiring)라면
+    //if (bIsFiring && CurrentWeapon->bIsAutomatic)
+    //{
+        // 아까 계산한 '현재 쿨타임(EffectiveFireDelay)' 만큼 기다렸다가
+        // Fire 함수를 다시 한 번 호출해달라고 타이머 설정 (반복 X, 1회성 예약)
+        GetWorldTimerManager().SetTimer(FireTimerHandle, this, &ASSCharacter::Fire, EffectiveFireDelay, false);
+    //}
 }
 
 void ASSCharacter::Reload()
